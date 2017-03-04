@@ -40,3 +40,8 @@ stack ghci
 import Euterpea
 playDev 2 $ c 4 en
 ```
+
+Convert midi to wav
+```
+fluidsynth -l -T wav /usr/share/soundfonts/FluidR3_GM.sf2 test.midi -F test.wav
+```

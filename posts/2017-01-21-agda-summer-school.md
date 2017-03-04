@@ -40,7 +40,7 @@ stack install text
 Add these lines into `agda-summer-school/exercises/Lambda.agda` before the
 main function.
 
-```
+``` Agda
 {-# IMPORT Data.Text #-}
 {-# IMPORT Data.Text.IO #-}
 postulate readFile : String -> IO String
