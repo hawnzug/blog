@@ -5,7 +5,7 @@ title: Home
 ## About
 
 I'm Zhuyang Wang, a sophomore undergraduate majoring in Computer Science at Shanghai Jiao Tong University.
-I am interested in Programming Language and Type Theory.
+I am interested in Functional Programming, Programming Language and compiling.
 I am a proud member of [SJTUG](http://sjtug.org), a joyful Linux user group.
 I love Haskell, Rust, Python and Agda.
 
