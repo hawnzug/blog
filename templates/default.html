@@ -1,11 +1,10 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html>
     <head>
         <meta charset="utf-8">
         <meta http-equiv="x-ua-compatible" content="ie=edge">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
         <title>hawnzug - $title$</title>
-        <link rel="stylesheet" href="/css/normalize.css">
         <link rel="stylesheet" href="/css/custom.css">
         <link rel="stylesheet" href="/css/syntax.css">
     </head>
@@ -15,6 +14,7 @@
                 <a href="/">Home</a>
                 <a href="/posts.html">Notes</a>
                 <a href="/pgp.html">PGP</a>
+                <a type="application/rss+xml" href="/feed.rss">RSS</a>
             </header>
 
             <div>
@@ -27,4 +27,10 @@
             </footer>
         </div>
     </body>
+    $if(katex)$
+    <link rel="stylesheet" href="/css/katex.min.css">
+    <script src="/js/katex.min.js"></script>
+    <script src="/js/auto-render.min.js"></script>
+    <script>renderMathInElement(document.body)</script>
+    $endif$
 </html>
