@@ -1,0 +1,139 @@
+---
+title: 解决 Hakyll 中文换行产生多余空格的问题
+---
+
+** 问题
+在 Markdown 格式的文件中有如下内容：
+#+BEGIN_EXAMPLE
+这是一
+行中文
+#+END_EXAMPLE
+Markdown 语法将其视为一行，这没有什么问题。问题出在基本上所有的 Markdown 转换器都会在
+合并时加入一个空格来分隔源文件中这两行的内容，这对于英文来说是一个自然而方便的特性，
+因为一般英文在书写时都会尽量避免把一个单词分在两行，尤其是在电子设备上。这个多出来的
+空格基本上都能用来分个两个单词或单词和标点。但是这个空格对中文来说却是一个比较尴尬的
+问题，转换后的文本如下：
+#+BEGIN_EXAMPLE
+这是一 行中文
+#+END_EXAMPLE
+显然这不是我们希望看到的。
+
+** 权宜之计
+将一段的文字都写在一行里面，在编辑器中写作时使用自动折行的功能来显示。
+不过这样产生的 Markdown 源文件就变得十分不易读（在没有自动折行的支持下）。
+
+** 解决办法
+这个博客是用 [[https://jaspervdj.be/hakyll/][Hakyll]] 生成的，它使用 [[https://pandoc.org/][Pandoc]] 将各种格式的源文件转换到网页。Pandoc
+是一个功能非常强大的工具，我能想到的文本格式之间的转换它都能做到。
+它本身也提供了各种扩展来支持更多的语法和特性。经过一番搜索，找到了
+=Ext_east_asian_line_breaks= 这个扩展。于是我在 =readerOptions= 里面加入了
+这个扩展。
+
+#+BEGIN_SRC haskell
+import Text.Pandoc.Options
+import Text.Pandoc.Extensions
+
+readerOpts :: ReaderOptions
+readerOpts = def
+  { readerExtensions = enableExtension
+      Ext_east_asian_line_breaks
+      (readerExtensions def)
+  }
+
+pandocChineseCompiler = pandocCompilerwith readerOpts def
+#+END_SRC
+
+然而并没有起到作用。我又尝试在 =writerOptions= 里面开这个扩展，仍然没有作用，
+两个地方都开也不行。这让我感到十分困惑。难道是 Pandoc 忽略了这个扩展？
+我尝试在命令行使用同一版本的 Pandoc 直接将 Markdown 转换成 HTML，发现这个
+扩展是起了作用的。那么问题可能出在 Hakyll 这里。可惜在看了一会儿 Hakyll 的
+相关代码后并没有发现有什么地方对 Pandoc 扩展进行了特殊处理。根据经验，在
+遇到玄学问题百思不得其解的时候应该上 Github 看看 issue。直接搜索这个扩展名，
+我找到了两个相关的 issue。
+
+第一个 [[https://github.com/jgm/pandoc/issues/2586][issue]] 中一位仁兄提出了更好地混排东亚文字和西文的这个需求。根据这个 issue，
+作者加入了 =Ext_east_asian_line_breaks= 这个扩展。查看这个 [[https://github.com/jgm/pandoc/commit/44120ea7165546152af88fd442c52ab0f201052e][commit]]，
+发现作者只对 Markdown 进行了处理。于是在第二个 [[https://github.com/jgm/pandoc/issues/3703][issue]] 中另一位仁兄提出了 Org-mode
+也需要这个拓展的建议。在对话的最后，我发现了这个问题的答案：
+#+BEGIN_QUOTE
+The only odd thing is that the extension would be applied in Text.Pandoc.App
+rather than in the reader itself, which would mean it couldn't be used easily
+when the readers/writers are called as libraries. This might cause some confusion.
+#+END_QUOTE
+当前版本的 Pandoc 是在主程序 =Text.Pandoc.App= 中对这个扩展进行了处理，而 Hakyll
+是使用 Pandoc 的 =reader= 和 =writer= 分别进行处理，因此这个扩展不会被照顾到。
+看到这里我已经觉得没什么办法了，只能去给 Hakyll 提个 issue。但是幸好我还会一点点
+Haskell，在看了相关的函数类型后我发现事情似乎没有那么麻烦。
+
+在 =Text.Pandoc.Shared= 中提供了解决上述 issue 的函数：
+#+BEGIN_SRC haskell
+eastAsianLineBreakFilter :: Pandoc -> Pandoc
+#+END_SRC
+
+在 =Hakyll.Web.Pandoc= 中提供了修改默认转换器的函数：
+#+BEGIN_SRC haskell
+pandocCompilerWithTransform :: ReaderOptions -> WriterOptions ->
+                               (Pandoc -> Pandoc) -> Compiler (Item String)
+#+END_SRC
+
+可以看到两个函数类型里面都有 =Pandoc -> Pandoc= 这么一串东西。
+即使不会 Haskell 的同学只看这写函数签名应该也能猜出，我们只要像拼积木一样
+把上面那个函数喂给下面那个函数就好了。
+
+#+BEGIN_SRC haskell
+import Text.Pandoc.Options
+import Text.Pandoc.Extensions
+import Text.Pandoc.Shared (eastAsianLineBreakFilter)
+
+pandocChineseCompiler = pandocCompilerwithTransform def def eastAsianLineBreakFilter
+#+END_SRC
+
+编译了一下果然成功了，代码甚至还更短了。
+
+** 效果
+我们有如下 Markdown（或者别的格式）文件：
+#+BEGIN_EXAMPLE
+测试
+一下
+Pandoc
+Hakyll
+的效果
+#+END_EXAMPLE
+转换后的格式：
+#+BEGIN_EXAMPLE
+测试一下 Pandoc Hakyll 的效果
+#+END_EXAMPLE
+可以看到中文之间的换行不会变成空格，而中英文之间和英文之间仍会加上空格，
+可以说是十分令人满意了。（中英文间是否要加空格可能有争议，目前应该普遍认为要加空格吧）
+
+唯一的问题是下面这段话：
+#+BEGIN_EXAMPLE
+这是一句话。
+This is a sentence.
+#+END_EXAMPLE
+会变成：
+#+BEGIN_EXAMPLE
+这是一句话。 This is a sentence.
+#+END_EXAMPLE
+因为 Pandoc 并不能区分中文文字和标点，所以在句号和下一行的英文之间加入了空格。
+这一功能实现起来可能也比较麻烦（？），现在我只能手动把下一行的英文提上来。
+
+** 总结
+贴一下目前的 Hakyll 配置文件 [[https://gist.github.com/hawnzug/0743fb6fc6351e369eb86a3143cb6586][=site.hs=]]
+
+其实这篇博客主要是测试一下这个解决方案，顺便安利一下 Haskell。实际上 Pandoc 中
+去掉中文换行产生的空格的代码也十分简单（模式匹配大法好）：
+#+BEGIN_SRC haskell
+eastAsianLineBreakFilter :: Pandoc -> Pandoc
+eastAsianLineBreakFilter = bottomUp go
+  where go (x:SoftBreak:y:zs) =
+         case (stringify x, stringify y) of
+               (xs@(_:_), c:_)
+                 | charWidth (last xs) == 2 && charWidth c == 2 -> x:y:zs
+               _ -> x:SoftBreak:y:zs
+        go xs = xs
+#+END_SRC
+我觉得这些 Haskell 写的小工具还是十分实用的，唯一的问题可能就是安装。
+除了 XMonad 和 Pandoc 这两个比较流行的工具（流行吗），其余的安装似乎
+都对非 Haskell 用户不太友好。另外就是 Haskell 的文档，虽然在会看了之后
+觉得很好用，但是初见不免一头雾水。
