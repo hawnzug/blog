@@ -1,25 +1,23 @@
 {-# LANGUAGE OverloadedStrings #-}
-import           Hakyll
-import           Text.Pandoc.Options
-import           Text.Pandoc.Extensions
-import           Text.Pandoc.Shared (eastAsianLineBreakFilter)
-import           Data.Monoid ((<>))
+import Hakyll
+import Text.Pandoc.Options
+import Text.Pandoc.Extensions
+import Text.Pandoc.Shared (eastAsianLineBreakFilter)
+import Data.Monoid ((<>))
 
 static = do
   match "css/*" $ route idRoute >> compile compressCssCompiler
   match "images/*" idCopy
-  match "js/*" idCopy
-  match "fonts/*" idCopy
   where idCopy = route idRoute >> compile copyFileCompiler
 
 main :: IO ()
 main = hakyll $ do
   static
   let ldr ctx i = loadAndApplyTemplate "templates/default.html" ctx i >>= relativizeUrls
-  match "index.md" $ do
+  match "index.org" $ do
     route   $ setExtension "html"
     compile $ pandocChineseCompiler >>= ldr defaultContext
-  match "pgp.md" $ do
+  match "pgp.org" $ do
     route   $ setExtension "html"
     compile $ pandocCompiler >>= ldr defaultContext
   match "posts/*" $ do
@@ -68,5 +66,5 @@ myFeedConfiguration = FeedConfiguration
   , feedDescription = "hawnzug's blog"
   , feedAuthorName  = "hawnzug"
   , feedAuthorEmail = "hawnzug@gmail.com"
-  , feedRoot        = "http://hawnzug.me"
+  , feedRoot        = "https://hawnzug.me"
   }

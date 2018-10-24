@@ -783,7 +783,7 @@ trans {ma} {mb} {mc} {md} (cong {me} {mf} {mg} {mh} succ (+-comm a b)) (lemma-+s
 
 在 `+comm` 的类型中，`a b : ℕ` 因为 `_+_ : ℕ → ℕ →
 ℕ`。这就得到了下面的方程组（去掉了重复的方程和元变量的应用）：
-```
+``` Agda
 trans (cong succ (+-comm a b)) (lemma-+succ b a) : _≡_ {ℕ} (succ a + b) (b + succ a)
 trans (cong succ (+-comm a b)) (lemma-+succ b a) : _≡_ {ℕ} (succ (a + b)) (b + succ a) -- normalization 之后
 ma = ℕ
@@ -1083,7 +1083,7 @@ cat BrutalDepTypes.lagda | sed '/^\\begin{code}/,/^\\end{code}/ ! d; /^\\begin{c
 ' | sed '/^ *module ThrowAway/,/^ *.- end of ThrowAway/ d;'
 ```
 我们需要以universe polymorphic的方式重新定义所有有用的东西（如果可以的话），从 `Level` 开始：
-```
+``` Agda
 module Level where
   -- Universe 层级
   postulate Level : Set
@@ -1320,7 +1320,7 @@ module MLTT where
 我个人都很少用 `_∧_` 和 `_×_` 因为 `_×_` 在规约形式中很丑，使得目标类型很难读。
 
 一些性质：
-```
+``` Agda
   module ≡-Prop where
    private
     module DummyA {α} {A : Set α} where
@@ -1695,7 +1695,7 @@ module ThrowAwayMore₁ where
   ⊆Test (there (there ()))
 ```
 让我们来证明关系 `⊆` 的一些性质：
-```
+``` Agda
   ⊆-++-left : ∀ {A : Set} (as bs : List A) → as ⊆ (bs ++ as)
   ⊆-++-left as [] n = n
   ⊆-++-left as (b ∷ bs) n = there (⊆-++-left as bs n)

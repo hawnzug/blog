@@ -1,7 +1,7 @@
 ---
 title: PGP Key
 ---
-```
+#+BEGIN_SRC 
 -----BEGIN PGP PUBLIC KEY BLOCK-----
 
 mQENBFhx2GQBCADNtutJzrNv250xrwufQDOsI5sVRJCaFouTToHAlhJH5IM0s+c9
@@ -51,4 +51,4 @@ Z2HDEd7XumpvoWv8mufoBAl+a44WgZ4uDq5sicpf9VUIXJ13WmDsadDwR8tw48ZG
 V7pUNc1G2if54S4=
 =p9YH
 -----END PGP PUBLIC KEY BLOCK-----
-```
+#+END_SRC

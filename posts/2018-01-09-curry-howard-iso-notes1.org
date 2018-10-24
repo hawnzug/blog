@@ -1,0 +1,119 @@
+---
+title: 库里霍华德同构笔记1：无类型lambda演算
+katex: true
+---
+
+由于我多次尝试读这本书，所以第一章我已经看了很多遍了
++（还是没看懂）+
+，这里就简单概括一下。
+
+第一节先定义了 pre-term（variable，application，abstraction），
+free variables，substitution，\alpha-equivalence，然后用 \alpha-equivalence
+定义了 \lambda-term，每个 \lambda-term 是一堆 \alpha-equivalent 的
+pre-term 的集合。比如 \lambda-term 中的 $x$ 是 pre-term $\{x,y,z,...\}$ 的
+集合，\lambda-term 中的 $\lambda x. x$ 是 pre-term $\{\lambda x. x, \lambda y. y, \lambda z. z, ...\}$
+的集合。之后顺便定义了 \lambda-term 的 free variable 和 substitution。
+
+第二节定义了
+\beta-reduction $\rightarrow_\beta$ ，multi-step \beta-reduction $\twoheadrightarrow_\beta$
+和 \beta-equality $=_\beta$ 。
+
+第三节用 \lambda-term 定义了 SKI 组合子。
+
+第四节介绍了 Church-Rosser 定理：
+对任意的 \lambda-term $M_1, M_2, M_3$ ，如果有 $M_1 \twoheadrightarrow_\beta M_2$
+且 $M_1 \twoheadrightarrow_\beta M_3$ ，那么必定存在一个 \lambda-term $M_4$ ，
+使得 $M_2 \twoheadrightarrow_\beta M_4$ 且 $M_3 \twoheadrightarrow_\beta M_4$ ，
+并给出了简要的证明。大致思路是先定义一个 diamond property，然后定义一个比 $\rightarrow_\beta$ 大
+一点，比 $\twoheadrightarrow_\beta$ 小一点的 $\twoheadrightarrow_l$ ，用归纳法证明 $\twoheadrightarrow_l$
+满足 diamond property，接着证明 $\twoheadrightarrow_\beta$ 是 $\twoheadrightarrow_l$ 的 transitive closure，
+由此可证 $\twoheadrightarrow_\beta$ 也满足 diamond property。之后用 Church-Rosser 定理的三个推论引出了
+lambda 演算的一致性。（注：实际上这里的 $\twoheadrightarrow_l$ 就是著名的 parallel \beta-reduction。
+Takahashi 在此基础上更进一步，给出了一个更短的证明，大概是定义了一个新的 reduction，
+把 parallel \beta-reduction 进行到底，得到一个差不多 normal 的项，从这个更强的定理就自然推出
+Church-Rosser 了。Pfenning 在论文里说核心部分的 Elf 证明只用了一下午，这样劝退真的好吗。
++希望有一天我能用 Coq/Agda/Idris 把 Church-Rosser 证一遍。+ ）
+
+第五节定义了邱奇数，不动点定理和 Y 组合子，并且证明了所有的递归函数都是 \lambda-definable 的。
+
+*** 练习
+把练习放在这里完全只是为了督促自已做题，很多答案都是错的，请勿参考。
+第一章的部分答案是以前做的所以是英文
++，有空我会翻译一下+ 。关于 Church-Rosser 定理的证明不是很严谨，
+有需要的读者可以看 Barendregt 的书或者别的论文。
+
+1. 
+   1. Apply (i), omit outmost parentheses
+   2. Apply (iii), omit outmost parentheses
+   3. Omit outmost parentheses
+   4. Apply (iii), apply (iii), apply (iv), omit outmost parentheses
+2. 2 and 5 are correct.
+3. Both are correct.
+4. 1, 3 and 4 have normal forms.
+5. 1 is strongly normalizing, 3 and 4 are weakly normalizing.
+6. 2 is true.
+7. By induction on $M_1 \rightarrow_\beta M_2$ and $M_1 \rightarrow_\beta M_3$. The idea
+   is to just exchange the order of \beta-reduction. This cannot be extended to prove the
+   Church-Rosser theorem.
+8. By induction on the definition of $M \twoheadrightarrow_l M'$.
+   1. $M'$ is $M$, induction on M
+      1. $M$ is $x$. After substitution, the goal becomes $N \twoheadrightarrow_l N'$, trivial.
+      2. $M$ is $y$. After substitution, the goal becomes $y \twoheadrightarrow_l y$, trivial.
+      3. $M$ is $(P \; Q)$. After substitution, the goal becomes
+         $P[x \coloneqq N] \; Q[x \coloneqq N] \twoheadrightarrow_l P[x \coloneqq N'] \; Q[x \coloneqq N']$.
+         And by induction hypothesis, we have $P[x \coloneqq N] \twoheadrightarrow_l P[x \coloneqq N']$ and the same for $Q$.
+         Then by the third line of $\twoheadrightarrow_l$ definition.
+      4. $M$ is $(\lambda y. P)$. By induction hypothesis, we have $P[x \coloneqq N] \twoheadrightarrow_l P[x \coloneqq N']$.
+         The goal is $(\lambda y. P[x \coloneqq N]) \twoheadrightarrow_l (\lambda y. P[x \coloneqq N'])$.
+         Then by the second line of $\twoheadrightarrow_l$ definition.
+   2. $\lambda y. P \twoheadrightarrow_l \lambda y. P'$. By induciton hypothesis,
+      we have $P[x \coloneqq N] \twoheadrightarrow_l P[x \coloneqq N']$.
+      Then by the second line of $\twoheadrightarrow_l$ definition.
+   3. $P \; Q \twoheadrightarrow_l P' \; Q'$. By induction hypothesis and the third line of definition.
+   4. $M \twoheadrightarrow_l M'$ is $(\lambda y. P) \; Q \twoheadrightarrow_l P'[y \coloneqq Q']$.
+
+      After substitution, the goal becomes
+      $$(\lambda y. P[x \coloneqq N]) \; Q[x \coloneqq N] \twoheadrightarrow_l P'[y \coloneqq Q'][x \coloneqq N']$$
+      By a simple lemma of substitution:
+      $$P[x \coloneqq Q][y \coloneqq R] = P[y \coloneqq R][x \coloneqq Q[y \coloneqq R]]$$
+      the right hand side of our goal becomes
+      $$P'[x \coloneqq N'][y \coloneqq Q'[x \coloneqq N']]$$
+      Let $R = P[x \coloneqq N], R' = P'[x \coloneqq N'], S = Q[x \coloneqq N], S' = Q'[x \coloneqq N']$. The goal becomes
+      $$(\lambda y. R) \; S \twoheadrightarrow_l R'[y \coloneqq S]$$
+      Finally by induction hypothesis.
+9. By induction on the definition of $M_1 \twoheadrightarrow_l M_2$.
+   1. $M_1 \twoheadrightarrow_l M_2$ is $P \twoheadrightarrow_l P$. Then let $M_4$ be $M_3$.
+   2. $M_1 \twoheadrightarrow_l M_2$ is $\lambda x.P_1 \twoheadrightarrow_l \lambda x. P_2$.
+
+      Since $M_1$ is $\lambda x. P_1$ and $M_1 \twoheadrightarrow_l M_3$, by definition, the
+      only possible form of $M_3$ is $\lambda x. P_3$.
+
+      By induction hypothesis, if $P_1 \twoheadrightarrow_l P_2$ and $P_1 \twoheadrightarrow_l P_3$,
+      then there exists an $P_4 \in \Lambda$ such that $P_2 \twoheadrightarrow_l P_4$ and $P_3 \twoheadrightarrow_l P_4$.
+      Thus let $M_4$ be $\lambda x. P_4$ and by definition we have
+      $\lambda x. P_2 \twoheadrightarrow_l \lambda x. P_4$ and
+      $\lambda x. P_3 \twoheadrightarrow_l \lambda x. P_4$.
+   3. 
+      1. $M_1 \twoheadrightarrow_l M_2$ is $P_1 \; Q_1 \twoheadrightarrow_l P_2 \; Q_2$.
+         $M_3$ is $P_3 \; Q_3$ and just like the proof of previous case, we have $M_4 = P_4 \; Q_4$.
+      2. $M_1 \twoheadrightarrow_l M_2$ is
+         $(\lambda x. P_1) \; Q_1 \twoheadrightarrow_l (\lambda x. P_2) \; Q_2$.
+         $M_1 \twoheadrightarrow_l M_3$ is
+         $(\lambda x. P_1) \; Q_1 \twoheadrightarrow_l P_3[x \coloneqq Q_3]$.
+
+         By induction hypothesis and definition, we have
+         $(\lambda x. P_2) \; Q_2 \twoheadrightarrow_l P_4[x \coloneqq Q_4]$ and
+         $P_3[x \coloneqq Q_3] \twoheadrightarrow_l P_4[x \coloneqq Q_4]$.
+         So just let $M_4$ be $P_4[x \coloneqq Q_4]$.
+   4. $M_1 \twoheadrightarrow_l M_2$ is
+      $(\lambda x. P_1) \; Q_1 \twoheadrightarrow_l P_2[x \coloneqq Q_2]$.
+
+      $M_3$ is $P_3[x \coloneqq Q_3]$. By induction hypothesis, we have $P_4$ and $Q_4$ satisfying
+      the corresponding diamond property. By previous lemma, we have
+      $P_2[x \coloneqq Q_2] \twoheadrightarrow_l P_4[x \coloneqq Q_4]$ and
+      $P_3[x \coloneqq Q_3] \twoheadrightarrow_l P_4[x \coloneqq Q_4]$.
+      So let $M_4$ be $P_4[x \coloneqq Q_4]$.
+10. 1, 2, 3, 4 are true.
+11. In 9.3.2, by definition we can only get $(\lambda x. P_2) \; Q_2 \twoheadrightarrow_l P_2[x \coloneqq Q_2]$
+    and cannot make use of the induction hypothesis
+    $P_2 \twoheadrightarrow_l P_4$ and $Q_2 \twoheadrightarrow_l Q_4$.
